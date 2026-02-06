@@ -79,7 +79,11 @@
 </header>
 
 <main id="app"></main>
-
+<div class="bar" style="justify-content:center; margin:32px auto 48px auto;">
+  <button class="primary" id="btnNewBottom">
+    🔄 Nouveau tirage
+  </button>
+</div>
 <script>
 /** =========================
  *  1) BANQUE DE QUESTIONS (à remplir ensuite depuis tes PDF)
@@ -1039,6 +1043,18 @@ function buildAttempt(){
   render();
 }
 
+function newAttemptAndGoTop() {
+  buildAttempt();
+
+  // petit délai pour laisser le DOM se reconstruire
+  requestAnimationFrame(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+  });
+}
+
 function metaText(){
   const total=state.questions.length;
   const nQCM=state.questions.filter(x=>x.type==="QCM").length;
@@ -1236,7 +1252,8 @@ function resetOne(qid){
 /** =========================
  *  6) GLOBAL BUTTON
  *  ========================= */
-document.getElementById("btnNew").addEventListener("click", () => buildAttempt());
+document.getElementById("btnNew").addEventListener("click", newAttemptAndGoTop);
+document.getElementById("btnNewBottom").addEventListener("click", newAttemptAndGoTop);
 
 /** =========================
  *  7) INIT (randomize on load)
@@ -1245,3 +1262,4 @@ buildAttempt();
 </script>
 </body>
 </html>
+
