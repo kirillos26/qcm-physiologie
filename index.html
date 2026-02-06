@@ -1,0 +1,1247 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Questionnaire — QCM & QRO</title>
+  <style>
+    :root{
+      --border:#e5e7eb; --muted:#6b7280; --bg:#ffffff; --soft:#f9fafb;
+      --ok:#16a34a; --ko:#dc2626; --ink:#111827;
+    }
+    body{ font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      margin:24px; line-height:1.45; color:var(--ink); background:var(--bg);
+    }
+    header{ max-width:980px; margin:0 auto 14px auto; }
+    h1{ font-size:1.45rem; margin:0 0 8px 0; display:flex; align-items:center; gap:10px; }
+    .sub{ margin:0 0 14px 0; color:var(--muted); }
+    .bar{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    button{
+      padding:9px 12px; border:1px solid #9ca3af; border-radius:12px;
+      background:var(--soft); cursor:pointer;
+    }
+    button.primary{ background:#111827; color:#fff; border-color:#111827; }
+    button:disabled{ opacity:.55; cursor:not-allowed; }
+    .meta{ margin-left:auto; color:var(--muted); font-size:.95rem; }
+
+    main{ max-width:980px; margin:14px auto 44px auto; display:flex; flex-direction:column; gap:14px; }
+    .card{
+      border:1px solid var(--border); border-radius:16px; padding:14px 14px 12px 14px;
+      background:#fff;
+    }
+    .topline{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+    .title{ margin:0; font-size:1.05rem; display:flex; align-items:center; gap:8px; }
+    .pill{
+      display:inline-block; font-size:.82rem; padding:2px 9px; border:1px solid var(--border);
+      border-radius:999px; color:var(--muted); white-space:nowrap;
+    }
+    .prompt{ margin:8px 0 10px 0; }
+    .choices{ display:flex; flex-direction:column; gap:8px; margin:10px 0 10px 0; }
+    label.choice{ display:flex; gap:10px; align-items:flex-start; }
+    input[type="checkbox"], input[type="radio"]{ margin-top:3px; transform:scale(1.1); }
+    textarea{
+      width:100%; min-height:92px; resize:vertical; padding:10px;
+      border-radius:12px; border:1px solid var(--border); font:inherit;
+    }
+    .controls{ display:flex; gap:10px; flex-wrap:wrap; margin:10px 0 6px 0; }
+    .feedback{
+      margin-top:10px; padding:10px 12px; border-radius:14px; border:1px solid var(--border);
+      background:#fafafa; white-space:pre-wrap;
+    }
+    .feedback.ok{ border-color:#86efac; background:#f0fdf4; }
+    .feedback.ko{ border-color:#fca5a5; background:#fef2f2; }
+    .muted{ color:var(--muted); }
+    .sep{ height:1px; background:var(--border); margin:10px 0; }
+
+    /* Icônes inline */
+    .ico{ width:18px; height:18px; display:inline-block; vertical-align:-3px; }
+    .ico svg{ width:18px; height:18px; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>
+    <span class="ico" aria-hidden="true">
+      <!-- petit pictogramme "quiz" -->
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M7 7h10M7 12h7M7 17h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"
+              stroke="currentColor" stroke-width="2"/>
+      </svg>
+    </span>
+    Questionnaire — QCM & QRO
+  </h1>
+
+  <div class="bar">
+    <button class="primary" id="btnNew">Nouveau tirage</button>
+    <span class="meta" id="meta"></span>
+  </div>
+</header>
+
+<main id="app"></main>
+
+<script>
+/** =========================
+ *  1) BANQUE DE QUESTIONS (à remplir ensuite depuis tes PDF)
+ *  ========================= */
+// =======================
+// QUESTION_BANK — PARTIE 1
+// Module 3 + Physio/Patho (semaines 1-2)
+// solutionText = explication (sans lettres, sans "Bonne(s) réponse(s)")
+// =======================
+
+const QUESTION_BANK = [
+  // -------- Module 3 --------
+  {
+    id: "m3_1",
+    type: "QCM",
+    mode: "single",
+    icon: "🧠",
+    prompt: "Le corps jaune a comme fonction de :",
+    choices: [
+      { text: "Sécréter la progestérone et des œstrogènes", correct: true },
+      { text: "Sécréter la testostérone", correct: false },
+      { text: "Sécréter du mucus vaginal", correct: false },
+      { text: "Sécréter le lait mammaire", correct: false }
+    ],
+    solutionText:
+      "Le corps jaune (issu du follicule après l’ovulation) sécrète surtout la progestérone et aussi des œstrogènes pour préparer et maintenir l’endomètre."
+  },
+  {
+    id: "m3_2",
+    type: "QCM",
+    mode: "single",
+    icon: "🧠",
+    prompt:
+      "Vrai ou Faux : Le corps jaune demeure actif jusqu'à ce que le placenta commence sa sécrétion hormonale.",
+    choices: [
+      { text: "Vrai", correct: true },
+      { text: "Faux", correct: false }
+    ],
+    solutionText:
+      "En début de grossesse, le corps jaune est maintenu (notamment par l’hCG) et assure la sécrétion de progestérone, puis le placenta prend progressivement le relais hormonal."
+  },
+  {
+    id: "m3_3",
+    type: "QCM",
+    mode: "single",
+    icon: "🧠",
+    prompt:
+      "Dans quelle phase du cycle menstruel trouve-t-on une production élevée de progestérone ?",
+    choices: [
+      { text: "Phase sécrétoire", correct: true },
+      { text: "Phase proliférative", correct: false },
+      { text: "Phase menstruelle", correct: false }
+    ],
+    solutionText:
+      "La progestérone est maximale après l’ovulation (phase lutéale), ce qui correspond à la phase sécrétoire de l’endomètre."
+  },
+  {
+    id: "m3_4",
+    type: "QCM",
+    mode: "single",
+    icon: "🧠",
+    prompt:
+      "Période de développement et de maturation du follicule lors du cycle ovarien :",
+    choices: [
+      { text: "Phase ovulatoire", correct: false },
+      { text: "Phase folliculaire", correct: true },
+      { text: "Phase lutéale", correct: false },
+      { text: "Phase sécrétoire", correct: false }
+    ],
+    solutionText:
+      "La croissance et la maturation des follicules se font pendant la phase folliculaire, avant l’ovulation."
+  },
+  {
+    id: "m3_5",
+    type: "QCM",
+    mode: "single",
+    icon: "🧠",
+    prompt:
+      "Hormone qui agit sur l'ovaire en stimulant la croissance d'un follicule :",
+    choices: [
+      { text: "Hormone lutéinisante (LH)", correct: false },
+      { text: "Œstrogène", correct: false },
+      { text: "Progestérone", correct: false },
+      { text: "Hormone folliculo-stimulante (FSH)", correct: true }
+    ],
+    solutionText:
+      "La FSH stimule la croissance et la maturation des follicules ovariens (recrutement et développement folliculaire)."
+  },
+  {
+    id: "m3_6",
+    type: "QCM",
+    mode: "single",
+    icon: "🧠",
+    prompt: "Laquelle parmi ces hormones est sécrétée par l'hypothalamus ?",
+    choices: [
+      { text: "Progestérone", correct: false },
+      { text: "Hormone folliculo-stimulante", correct: false },
+      { text: "Œstrogène", correct: false },
+      { text: "Gonadolibérine (GnRH)", correct: true }
+    ],
+    solutionText:
+      "L’hypothalamus sécrète la GnRH, qui stimule l’hypophyse à libérer FSH et LH."
+  },
+  {
+    id: "m3_7",
+    type: "QCM",
+    mode: "single",
+    icon: "🧠",
+    prompt: "Hormone qui déclenche l’ovulation (phase ovulatoire) :",
+    choices: [
+      { text: "Hormone lutéinisante (LH)", correct: true },
+      { text: "Œstrogène", correct: false },
+      { text: "Progestérone", correct: false },
+      { text: "Hormone folliculo-stimulante", correct: false }
+    ],
+    solutionText:
+      "Le pic de LH est l’événement clé qui déclenche l’ovulation (rupture folliculaire et libération de l’ovocyte)."
+  },
+  {
+    id: "m3_8",
+    type: "QCM",
+    mode: "single",
+    icon: "🧠",
+    prompt: "Laquelle n'est PAS une des couches de l’utérus :",
+    choices: [
+      { text: "Séreuse protectrice", correct: false },
+      { text: "Myomètre", correct: false },
+      { text: "Endomètre", correct: false },
+      { text: "Ectomètre", correct: true }
+    ],
+    solutionText:
+      "Les couches classiques de l’utérus sont l’endomètre, le myomètre et la séreuse (périmètre). « Ectomètre » n’est pas une couche standard."
+  },
+  {
+    id: "m3_9",
+    type: "QCM",
+    mode: "single",
+    icon: "🧠",
+    prompt:
+      "Étape du cycle utérin où, sous l'influence des œstrogènes et de la progestérone du corps jaune, l'endomètre continue à s'épaissir :",
+    choices: [
+      { text: "Phase menstruelle", correct: false },
+      { text: "Phase proliférative", correct: false },
+      { text: "Phase sécrétoire", correct: true },
+      { text: "Phase folliculaire", correct: false }
+    ],
+    solutionText:
+      "Après l’ovulation, la progestérone rend l’endomètre sécrétoire : il s’épaissit, devient vascularisé et apte à la nidation."
+  },
+  {
+    id: "m3_10",
+    type: "QCM",
+    mode: "single",
+    icon: "🧠",
+    prompt: "La fécondation a lieu :",
+    choices: [
+      { text: "Dans le col utérin", correct: false },
+      { text: "Dans les ovaires", correct: false },
+      { text: "Dans l’utérus", correct: false },
+      { text: "Dans la trompe de Fallope", correct: true }
+    ],
+    solutionText:
+      "La fécondation se produit le plus souvent dans l’ampoule de la trompe utérine (trompe de Fallope), avant la migration vers l’utérus."
+  },
+  {
+    id: "m3_11",
+    type: "QCM",
+    mode: "single",
+    icon: "🧠",
+    prompt:
+      "Lors du cycle ovarien, quelle est la principale conséquence du pic de LH ?",
+    choices: [
+      { text: "Déclenchement de la libération de plusieurs ovocytes", correct: false },
+      { text: "Transformation du corps jaune en follicule dominant", correct: false },
+      {
+        text: "Libération de l’ovocyte de deuxième ordre du follicule dominant",
+        correct: true
+      },
+      { text: "Arrêt immédiat de la production de FSH", correct: false }
+    ],
+    solutionText:
+      "Le pic de LH entraîne la reprise de la méiose de l’ovocyte et la rupture du follicule dominant, ce qui libère l’ovocyte II."
+  },
+  {
+    id: "m3_12",
+    type: "QCM",
+    mode: "single",
+    icon: "🧠",
+    prompt: "Chez la femme, la LH stimule la production d’œstrogènes par les ovaires.",
+    choices: [
+      { text: "Faux", correct: true },
+      { text: "Vrai", correct: false }
+    ],
+    solutionText:
+      "La production d’œstrogènes est surtout stimulée par la FSH au niveau des cellules de la granulosa ; la LH agit surtout sur les cellules thécales et déclenche l’ovulation."
+  },
+  {
+    id: "m3_13",
+    type: "QCM",
+    mode: "single",
+    icon: "🧠",
+    prompt: "La production d’ovules chez la femme se fait :",
+    choices: [
+      { text: "En continu", correct: false },
+      { text: "De manière cyclique", correct: true }
+    ],
+    solutionText:
+      "Après la puberté, la maturation ovocytaire et l’ovulation se déroulent de façon cyclique (environ un cycle par mois)."
+  },
+  {
+    id: "m3_14",
+    type: "QCM",
+    mode: "single",
+    icon: "🧠",
+    prompt:
+      "L'œstrogène est sécrété pendant la phase lutéale et la progestérone pendant la phase folliculaire.",
+    choices: [
+      { text: "Faux", correct: true },
+      { text: "Vrai", correct: false }
+    ],
+    solutionText:
+      "C’est l’inverse : les œstrogènes dominent plutôt en phase folliculaire, tandis que la progestérone est élevée en phase lutéale (après ovulation)."
+  },
+  {
+    id: "m3_15",
+    type: "QCM",
+    mode: "single",
+    icon: "🧠",
+    prompt: "Quelle(s) hormone(s) est/sont sécrétée(s) par le corps jaune ?",
+    choices: [
+      { text: "Œstrogène", correct: false },
+      { text: "Progestérone", correct: false },
+      { text: "Progestérone et œstrogènes", correct: true },
+      { text: "Testostérone", correct: false }
+    ],
+    solutionText:
+      "Le corps jaune sécrète surtout la progestérone et aussi des œstrogènes pour soutenir l’endomètre en vue d’une implantation."
+  },
+  {
+    id: "m3_16",
+    type: "QCM",
+    mode: "single",
+    icon: "🧠",
+    prompt:
+      "L’ovogenèse débute à la 15ᵉ semaine de gestation et se déroule de manière continue.",
+    choices: [
+      { text: "Faux", correct: true },
+      { text: "Vrai", correct: false }
+    ],
+    solutionText:
+      "L’ovogenèse commence pendant la vie fœtale, puis s’interrompt (blocages méïotiques) et ne se déroule pas de façon continue tout au long de la vie."
+  },
+  {
+    id: "m3_17",
+    type: "QCM",
+    mode: "single",
+    icon: "🧠",
+    prompt: "La couche externe de l’utérus est appelée :",
+    choices: [
+      { text: "Endomètre", correct: false },
+      { text: "Grande lèvre", correct: false },
+      { text: "Séreuse protectrice", correct: true }
+    ],
+    solutionText:
+      "La couche la plus externe de l’utérus est la séreuse (aussi appelée périmètre), qui enveloppe l’organe."
+  },
+  {
+    id: "m3_18",
+    type: "QCM",
+    mode: "single",
+    icon: "🧠",
+    prompt: "L’endomètre se contracte pour permettre à l’utérus d’expulser le bébé.",
+    choices: [
+      { text: "Faux", correct: true },
+      { text: "Vrai", correct: false }
+    ],
+    solutionText:
+      "Ce sont les contractions du myomètre (couche musculaire) qui expulsent le bébé, pas l’endomètre."
+  },
+  {
+    id: "m3_19",
+    type: "QCM",
+    mode: "single",
+    icon: "🧠",
+    prompt: "Où se produit la fécondation dans le système reproducteur féminin ?",
+    choices: [
+      { text: "Dans les ovaires", correct: false },
+      { text: "Dans l’utérus", correct: false },
+      { text: "Dans les trompes de Fallope", correct: true },
+      { text: "Dans le vagin", correct: false }
+    ],
+    solutionText:
+      "La fécondation a lieu dans la trompe utérine (le plus souvent dans l’ampoule), puis l’embryon migre vers l’utérus."
+  },
+  {
+    id: "m3_20",
+    type: "QCM",
+    mode: "single",
+    icon: "🧠",
+    prompt:
+      "Le cycle menstruel se divise en trois phases : menstruelle, proliférative et sécrétoire.",
+    choices: [
+      { text: "Vrai", correct: true },
+      { text: "Faux", correct: false }
+    ],
+    solutionText:
+      "Le cycle utérin est classiquement décrit en 3 phases : menstruelle (desquamation), proliférative (sous œstrogènes) et sécrétoire (sous progestérone)."
+  },
+  {
+    id: "m3_21",
+    type: "QCM",
+    mode: "single",
+    icon: "🧠",
+    prompt:
+      "La phase lutéale est caractérisée par une augmentation de la progestérone et des œstrogènes, surtout en cas de fécondation.",
+    choices: [
+      { text: "Vrai", correct: true },
+      { text: "Faux", correct: false }
+    ],
+    solutionText:
+      "En phase lutéale, le corps jaune sécrète progestérone (principalement) et œstrogènes ; en cas de fécondation, ces sécrétions sont maintenues."
+  },
+  {
+    id: "m3_22",
+    type: "QCM",
+    mode: "single",
+    icon: "🧠",
+    prompt: "Le pH du vagin est basique.",
+    choices: [
+      { text: "Faux", correct: true },
+      { text: "Vrai", correct: false }
+    ],
+    solutionText:
+      "Le pH vaginal est généralement acide, ce qui limite la prolifération de nombreux micro-organismes."
+  },
+  {
+    id: "m3_23",
+    type: "QCM",
+    mode: "single",
+    icon: "🧠",
+    prompt: "Le corps jaune demeure actif jusqu’à la fin de la grossesse.",
+    choices: [
+      { text: "Faux", correct: true },
+      { text: "Vrai", correct: false }
+    ],
+    solutionText:
+      "Le corps jaune est surtout crucial au début ; ensuite, le placenta devient la principale source de progestérone et d’autres hormones."
+  },
+  {
+    id: "m3_24",
+    type: "QCM",
+    mode: "single",
+    icon: "🧠",
+    prompt: "L’hypothalamus sécrète les gonadolibérines.",
+    choices: [
+      { text: "Vrai", correct: true },
+      { text: "Faux", correct: false }
+    ],
+    solutionText:
+      "La GnRH est une gonadolibérine produite par l’hypothalamus pour contrôler la sécrétion hypophysaire de FSH et LH."
+  },
+  {
+    id: "m3_25",
+    type: "QCM",
+    mode: "single",
+    icon: "🧠",
+    prompt:
+      "À la puberté, la production des ovules implique un seul follicule par cycle.",
+    choices: [
+      { text: "Vrai", correct: true },
+      { text: "Faux", correct: false }
+    ],
+    solutionText:
+      "Plusieurs follicules peuvent débuter leur croissance, mais en général un seul devient dominant et ovule lors d’un cycle."
+  },
+
+  // -------- Physio / Patho (semaines 1-2) --------
+  {
+    id: "pp_1",
+    type: "QCM",
+    mode: "single",
+    icon: "🧬",
+    prompt:
+      "Quel organe est responsable de la maturation des spermatozoïdes avant l'éjaculation ?",
+    choices: [
+      { text: "La prostate", correct: false },
+      { text: "L'épididyme", correct: true },
+      { text: "Les vésicules séminales", correct: false },
+      { text: "L'urètre", correct: false }
+    ],
+    solutionText:
+      "Les spermatozoïdes acquièrent leur motilité et leur capacité fécondante lors de leur transit et stockage dans l’épididyme."
+  },
+  {
+    id: "pp_2",
+    type: "QCM",
+    mode: "single",
+    icon: "🧬",
+    prompt:
+      "Vrai ou Faux : Les sécrétions de la glande bulbo-urétrale ont pour fonction de nettoyer l'urètre avant le passage du sperme.",
+    choices: [
+      { text: "Vrai", correct: true },
+      { text: "Faux", correct: false }
+    ],
+    solutionText:
+      "La glande bulbo-urétrale (Cowper) sécrète un mucus lubrifiant qui aide à nettoyer et neutraliser l’urètre avant l’éjaculation."
+  },
+  {
+    id: "pp_3",
+    type: "QCM",
+    mode: "single",
+    icon: "🧬",
+    prompt: "Vrai ou Faux : L’éjaculation est contrôlée par des hormones comme la prolactine.",
+    choices: [
+      { text: "Vrai", correct: false },
+      { text: "Faux", correct: true }
+    ],
+    solutionText:
+      "L’éjaculation est principalement un réflexe neurovégétatif (système nerveux), pas un mécanisme directement contrôlé par la prolactine."
+  },
+  {
+    id: "pp_4",
+    type: "QCM",
+    mode: "single",
+    icon: "🧬",
+    prompt:
+      "Vrai ou Faux : Les cellules de Leydig produisent la testostérone en réponse à la stimulation par la FSH.",
+    choices: [
+      { text: "Vrai", correct: false },
+      { text: "Faux", correct: true }
+    ],
+    solutionText:
+      "Les cellules de Leydig produisent la testostérone surtout sous l’effet de la LH ; la FSH agit principalement sur les cellules de Sertoli."
+  },
+  {
+    id: "pp_5",
+    type: "QCM",
+    mode: "single",
+    icon: "🧬",
+    prompt: "Vrai ou Faux : La testostérone est produite par les vésicules séminales.",
+    choices: [
+      { text: "Vrai", correct: false },
+      { text: "Faux", correct: true }
+    ],
+    solutionText:
+      "La testostérone est produite par les cellules de Leydig du testicule, pas par les vésicules séminales."
+  },
+  {
+    id: "pp_6",
+    type: "QCM",
+    mode: "single",
+    icon: "🧬",
+    prompt:
+      "Vrai ou Faux : Les spermatozoïdes restent dans le corps et s'accumulent pour toujours.",
+    choices: [
+      { text: "Vrai", correct: false },
+      { text: "Faux", correct: true }
+    ],
+    solutionText:
+      "Les spermatozoïdes ont une durée de vie limitée : ils sont stockés un temps puis réabsorbés/dégradés s’ils ne sont pas éjaculés."
+  },
+  {
+    id: "pp_7",
+    type: "QCM",
+    mode: "single",
+    icon: "🧬",
+    prompt: "Vrai ou Faux : Les spermatogonies se multiplient par mitose.",
+    choices: [
+      { text: "Vrai", correct: true },
+      { text: "Faux", correct: false }
+    ],
+    solutionText:
+      "Les spermatogonies sont des cellules germinales qui se renouvellent par mitose avant d’entrer en méiose."
+  },
+  {
+    id: "pp_8",
+    type: "QCM",
+    mode: "single",
+    icon: "🧬",
+    prompt: "Quel est le site d'origine de la production des spermatozoïdes ?",
+    choices: [
+      { text: "Épididyme", correct: false },
+      { text: "Les tubules séminifères contournés", correct: true },
+      { text: "Les tubules séminifères droits", correct: false },
+      { text: "La prostate", correct: false }
+    ],
+    solutionText:
+      "La spermatogenèse a lieu dans les tubules séminifères contournés du testicule."
+  },
+  {
+    id: "pp_9",
+    type: "QCM",
+    mode: "single",
+    icon: "🧬",
+    prompt: "Quelles sont les gonades chez l’homme ?",
+    choices: [
+      { text: "Les spermatozoïdes", correct: false },
+      { text: "Les ovules", correct: false },
+      { text: "L'hypothalamus", correct: false },
+      { text: "Les testicules", correct: true }
+    ],
+    solutionText:
+      "Les gonades sont les organes producteurs de gamètes et d’hormones sexuelles : chez l’homme, ce sont les testicules."
+  },
+  {
+    id: "pp_10",
+    type: "QCM",
+    mode: "single",
+    icon: "🧬",
+    prompt: "Quel élément ne fait pas partie du trajet des spermatozoïdes ?",
+    choices: [
+      { text: "Tubules séminifères", correct: false },
+      { text: "Canal éjaculateur", correct: false },
+      { text: "Uretères", correct: true },
+      { text: "Canal déférent", correct: false }
+    ],
+    solutionText:
+      "Les uretères transportent l’urine des reins vers la vessie ; ils ne participent pas au trajet des spermatozoïdes."
+  },
+  {
+    id: "pp_11",
+    type: "QCM",
+    mode: "single",
+    icon: "🧬",
+    prompt: "Vrai ou Faux : La méiose sert à produire des cellules sexuelles.",
+    choices: [
+      { text: "Vrai", correct: true },
+      { text: "Faux", correct: false }
+    ],
+    solutionText:
+      "La méiose réduit le nombre de chromosomes et permet la formation de gamètes haploïdes."
+  },
+  {
+    id: "pp_12",
+    type: "QCM",
+    mode: "single",
+    icon: "🧬",
+    prompt: "Quelle est la différence entre la mitose et la méiose ?",
+    choices: [
+      {
+        text: "La mitose produit des cellules filles identiques, tandis que la méiose produit des cellules filles génétiquement différentes.",
+        correct: true
+      },
+      {
+        text: "La mitose ne se déroule que dans les cellules sexuelles, tandis que la méiose se déroule dans toutes les cellules du corps.",
+        correct: false
+      },
+      {
+        text: "La mitose aboutit à 4 cellules et la méiose à 2 cellules.",
+        correct: false
+      }
+    ],
+    solutionText:
+      "La mitose conserve le caryotype et produit des cellules identiques, alors que la méiose produit des gamètes haploïdes et crée de la diversité génétique."
+  },
+  {
+    id: "pp_13",
+    type: "QCM",
+    mode: "single",
+    icon: "🧬",
+    prompt:
+      "Combien de chromosomes sont présents dans une cellule somatique humaine (diploïde) ?",
+    choices: [
+      { text: "56", correct: false },
+      { text: "46", correct: true },
+      { text: "45", correct: false },
+      { text: "22", correct: false }
+    ],
+    solutionText:
+      "Les cellules somatiques humaines sont diploïdes : elles contiennent 46 chromosomes (23 paires)."
+  },
+  {
+    id: "pp_14",
+    type: "QCM",
+    mode: "single",
+    icon: "🧬",
+    prompt: "Un chromosome peut être constitué de :",
+    choices: [
+      { text: "Deux chromatides", correct: true },
+      { text: "Une seule chromatide", correct: false }
+    ],
+    solutionText:
+      "Après réplication de l’ADN, un chromosome est formé de deux chromatides sœurs reliées par un centromère."
+  },
+  {
+    id: "pp_15",
+    type: "QCM",
+    mode: "single",
+    icon: "🧬",
+    prompt: "Chez les humains, l’ADN se trouve toujours dans :",
+    choices: [
+      { text: "Le cytoplasme de la cellule", correct: false },
+      { text: "La membrane cellulaire", correct: false },
+      { text: "Le noyau de la cellule", correct: true },
+      { text: "Autre", correct: false }
+    ],
+    solutionText:
+      "Chez les eucaryotes, l’essentiel de l’ADN est dans le noyau (on peut aussi en trouver dans les mitochondries, selon le niveau de détail attendu)."
+  },
+  {
+    id: "pp_16",
+    type: "QCM",
+    mode: "single",
+    icon: "🧬",
+    prompt:
+      "Vrai ou Faux : La complémentarité de l’ADN est A–C et G–T.",
+    choices: [
+      { text: "Vrai", correct: false },
+      { text: "Faux", correct: true }
+    ],
+    solutionText:
+      "Les appariements corrects sont A–T et C–G (adénine avec thymine, cytosine avec guanine)."
+  },
+  {
+    id: "pp_19",
+    type: "QCM",
+    mode: "single",
+    icon: "🧬",
+    prompt: "Quelle phrase décrit l’anaphase de la mitose ?",
+    choices: [
+      { text: "Les chromosomes s'alignent sur la plaque équatoriale.", correct: false },
+      { text: "Les chromatides sœurs se séparent et migrent vers les pôles opposés.", correct: true },
+      { text: "Les chromosomes homologues s'apparient et échangent des segments.", correct: false },
+      { text: "Deux nouvelles membranes nucléaires se forment autour des chromosomes.", correct: false }
+    ],
+    solutionText:
+      "En anaphase, les chromatides sœurs sont tirées vers des pôles opposés par le fuseau mitotique."
+  },
+  {
+    id: "pp_20",
+    type: "QCM",
+    mode: "single",
+    icon: "🧬",
+    prompt: "Vrai ou Faux : Dans le chromosome, l’ADN est décondensé.",
+    choices: [
+      { text: "Vrai", correct: false },
+      { text: "Faux", correct: true }
+    ],
+    solutionText:
+      "Un chromosome (au sens des phases de division) correspond à de l’ADN fortement condensé ; l’ADN décondensé correspond plutôt à la chromatine."
+  },
+  {
+    id: "pp_22",
+    type: "QCM",
+    mode: "single",
+    icon: "🧬",
+    prompt: "Laquelle parmi ces hormones est sécrétée par l'hypothalamus ?",
+    choices: [
+      { text: "La progestérone", correct: false },
+      { text: "L'hormone folliculo-stimulante", correct: false },
+      { text: "L'estrogène", correct: false },
+      { text: "La gonadolibérine (GnRH)", correct: true }
+    ],
+    solutionText:
+      "La GnRH est sécrétée par l’hypothalamus et contrôle la libération hypophysaire de FSH et LH."
+  },
+  {
+    id: "pp_24",
+    type: "QCM",
+    mode: "single",
+    icon: "🧬",
+    prompt:
+      "Vrai ou Faux : L'homme peut produire normalement des spermatozoïdes si la température testiculaire est de 37°C.",
+    choices: [
+      { text: "Vrai", correct: false },
+      { text: "Faux", correct: true }
+    ],
+    solutionText:
+      "La spermatogenèse nécessite une température légèrement inférieure à celle du corps (environ 34–35°C), d’où la position externe des testicules."
+  },
+  {
+    id: "pp_26",
+    type: "QCM",
+    mode: "single",
+    icon: "🧬",
+    prompt:
+      "Vrai ou Faux : La FSH stimule le développement folliculaire lors de la phase lutéale.",
+    choices: [
+      { text: "Vrai", correct: false },
+      { text: "Faux", correct: true }
+    ],
+    solutionText:
+      "La FSH stimule surtout le développement folliculaire en phase folliculaire ; la phase lutéale est dominée par l’activité du corps jaune."
+  },
+  {
+    id: "pp_27",
+    type: "QCM",
+    mode: "single",
+    icon: "🧬",
+    prompt:
+      "La production de spermatozoïdes (avec le rôle des cellules de Sertoli) est contrôlée par :",
+    choices: [
+      { text: "La testostérone et l'hormone lutéinisante", correct: false },
+      { text: "L'hormone folliculo-stimulante et l'hormone lutéinisante", correct: false },
+      { text: "La testostérone et l'hormone folliculo-stimulante", correct: true },
+      { text: "L'hormone lutéinisante et l'inhibine", correct: false }
+    ],
+    solutionText:
+      "La FSH agit sur les cellules de Sertoli et la testostérone (produite sous LH) est indispensable à la spermatogenèse."
+  },
+  {
+    id: "pp_28",
+    type: "QCM",
+    mode: "single",
+    icon: "🧬",
+    prompt:
+      "Dans quelle phase de la mitose les centrioles se déplacent-ils vers les pôles opposés ?",
+    choices: [
+      { text: "Prophase", correct: true },
+      { text: "Métaphase", correct: false },
+      { text: "Anaphase", correct: false },
+      { text: "Télophase", correct: false }
+    ],
+    solutionText:
+      "En prophase, le fuseau se met en place et les centrosomes (centrioles) migrent vers les pôles."
+  },
+  {
+    id: "pp_29",
+    type: "QCM",
+    mode: "single",
+    icon: "🧬",
+    prompt:
+      "Compléter : Les spermatozoïdes se rendent à l'épididyme où ils séjournent environ ____ et deviennent matures.",
+    choices: [
+      { text: "20 jours", correct: true },
+      { text: "5 heures", correct: false },
+      { text: "30 jours", correct: false },
+      { text: "2 heures", correct: false }
+    ],
+    solutionText:
+      "La maturation et le stockage épididymaires prennent de l’ordre de plusieurs jours à semaines ; ici l’option attendue correspond à environ 20 jours."
+  },
+  {
+    id: "pp_30",
+    type: "QCM",
+    mode: "single",
+    icon: "🧬",
+    prompt:
+      "Sécrète un mucus qui nettoie l'intérieur de l'urètre avant le passage du sperme :",
+    choices: [
+      { text: "Glande bulbo-urétrale", correct: true },
+      { text: "Grandes lèvres", correct: false },
+      { text: "Trompe utérine", correct: false },
+      { text: "Conduit déférent", correct: false }
+    ],
+    solutionText:
+      "La glande bulbo-urétrale sécrète un mucus lubrifiant qui prépare l’urètre au passage du sperme."
+  },
+  {
+    id: "pp_31",
+    type: "QCM",
+    mode: "single",
+    icon: "🧬",
+    prompt: "Conduit qui expulse le sperme dans l'urètre.",
+    choices: [
+      { text: "Trompe utérine", correct: false },
+      { text: "Corps jaune", correct: false },
+      { text: "Conduit déférent", correct: false },
+      { text: "Conduit éjaculateur", correct: true }
+    ],
+    solutionText:
+      "Le conduit éjaculateur déverse le sperme dans l’urètre lors de l’éjaculation."
+  },
+  {
+    id: "pp_32",
+    type: "QCM",
+    mode: "single",
+    icon: "🧬",
+    prompt:
+      "Vrai ou Faux : La césarienne consiste à inciser la paroi musculaire du périnée pour faciliter le passage du bébé.",
+    choices: [
+      { text: "Vrai", correct: false },
+      { text: "Faux", correct: true }
+    ],
+    solutionText:
+      "La césarienne est une chirurgie avec incision de l’abdomen et de l’utérus ; l’incision du périnée correspond plutôt à une épisiotomie."
+  },
+  {
+    id: "m4_1",
+    type: "QCM",
+    mode: "single",
+    icon: "🤰",
+    prompt:
+      "Le gain de poids durant la grossesse est d’environ 12 à 13 kg (≈ 26–28 lb).",
+    choices: [
+      { text: "Vrai", correct: true },
+      { text: "Faux", correct: false }
+    ],
+    solutionText:
+      "Chez une femme de corpulence normale, la prise de poids recommandée pendant la grossesse est en moyenne d’environ 12 à 13 kg."
+  },
+  {
+    id: "m4_2",
+    type: "QRO",
+    icon: "🤰",
+    prompt:
+      "Quelle glande sécrète un mucus qui nettoie l’intérieur de l’urètre avant le passage du sperme ?",
+    modelAnswer:
+      "La glande bulbo-urétrale (ou glande de Cowper), qui sécrète un mucus lubrifiant et neutralisant."
+  },
+  {
+    id: "m4_3",
+    type: "QRO",
+    icon: "🤰",
+    prompt: "Quel conduit expulse le sperme dans l’urètre ?",
+    modelAnswer:
+      "Le conduit éjaculateur, qui permet l’arrivée du sperme dans l’urètre lors de l’éjaculation."
+  },
+  {
+    id: "m4_4",
+    type: "QCM",
+    mode: "single",
+    icon: "🤰",
+    prompt:
+      "La césarienne consiste à inciser la paroi musculaire du périnée pour faciliter le passage du bébé.",
+    choices: [
+      { text: "Vrai", correct: false },
+      { text: "Faux", correct: true }
+    ],
+    solutionText:
+      "La césarienne est une intervention chirurgicale consistant à inciser l’abdomen et l’utérus ; l’incision du périnée correspond à l’épisiotomie."
+  },
+  {
+    id: "m4_5",
+    type: "QRO",
+    icon: "🤰",
+    prompt:
+      "Quelle est la principale cause des nausées matinales pendant la grossesse, surtout au premier trimestre ?",
+    modelAnswer:
+      "Les modifications hormonales, en particulier l’augmentation de l’hormone hCG, sont principalement responsables des nausées."
+  },
+  {
+    id: "m4_6",
+    type: "QRO",
+    icon: "🤰",
+    prompt:
+      "À quelle période du développement fœtal le système immunitaire commence-t-il à se former et le fœtus réagit-il aux stimuli extérieurs ?",
+    modelAnswer:
+      "Vers la fin du deuxième trimestre, environ entre les semaines 17 et 20 de grossesse."
+  },
+  {
+    id: "m4_7",
+    type: "QCM",
+    mode: "single",
+    icon: "🤰",
+    prompt:
+      "Pendant la phase de délivrance de l’accouchement, les contractions utérines se poursuivent afin de permettre l’expulsion du placenta.",
+    choices: [
+      { text: "Vrai", correct: true },
+      { text: "Faux", correct: false }
+    ],
+    solutionText:
+      "Après la naissance du bébé, les contractions persistent pour détacher et expulser le placenta : c’est la délivrance."
+  },
+  {
+    id: "m4_8",
+    type: "QRO",
+    icon: "🤰",
+    prompt:
+      "Quelle hormone sécrétée pendant la grossesse permet l’assouplissement de la symphyse pubienne ?",
+    modelAnswer:
+      "La relaxine, hormone qui favorise le relâchement des ligaments du bassin."
+  },
+  {
+    id: "m4_9",
+    type: "QRO",
+    icon: "🤰",
+    prompt: "Où a lieu la fécondation chez l’être humain ?",
+    modelAnswer:
+      "Dans la trompe de Fallope, le plus souvent au niveau de l’ampoule tubaire."
+  },
+  {
+    id: "m4_10",
+    type: "QCM",
+    mode: "single",
+    icon: "🤰",
+    prompt: "L’amnios est la membrane externe du sac amniotique.",
+    choices: [
+      { text: "Vrai", correct: false },
+      { text: "Faux", correct: true }
+    ],
+    solutionText:
+      "L’amnios est la membrane interne du sac amniotique ; le chorion constitue la membrane externe."
+  },
+  {
+    id: "m4_11",
+    type: "QCM",
+    mode: "single",
+    icon: "🤰",
+    prompt:
+      "La durée de la grossesse est calculée à partir du dernier jour de la dernière menstruation.",
+    choices: [
+      { text: "Vrai", correct: true },
+      { text: "Faux", correct: false }
+    ],
+    solutionText:
+      "En obstétrique, l’âge gestationnel est classiquement calculé à partir du premier jour des dernières règles."
+  },
+  {
+    id: "m4_12",
+    type: "QCM",
+    mode: "single",
+    icon: "🤰",
+    prompt:
+      "Le zygote est une cellule haploïde résultant de la fusion de deux gamètes diploïdes.",
+    choices: [
+      { text: "Vrai", correct: false },
+      { text: "Faux", correct: true }
+    ],
+    solutionText:
+      "Le zygote est une cellule diploïde issue de la fusion de deux gamètes haploïdes (ovule et spermatozoïde)."
+  }
+];
+
+
+
+/** =========================
+ *  2) UTILS
+ *  ========================= */
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+function deepClone(obj){ return JSON.parse(JSON.stringify(obj)); }
+function escapeHtml(s){
+  if(s==null) return "";
+  return String(s)
+    .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;").replaceAll("'","&#039;");
+}
+function sameSet(a,b){
+  const A=[...a].sort((x,y)=>x-y), B=[...b].sort((x,y)=>x-y);
+  if(A.length!==B.length) return false;
+  return A.every((v,i)=>v===B[i]);
+}
+
+/** =========================
+ *  3) ÉTAT + GÉNÉRATION
+ *  ========================= */
+let state = { questions: [] };
+
+function buildAttempt(){
+  const q = deepClone(QUESTION_BANK);
+
+  // Random questions
+  shuffle(q);
+
+  // Random choices in each QCM
+  for(const item of q){
+    if(item.type==="QCM" && Array.isArray(item.choices)) shuffle(item.choices);
+  }
+
+  state.questions = q;
+  render();
+}
+
+function metaText(){
+  const total=state.questions.length;
+  const nQCM=state.questions.filter(x=>x.type==="QCM").length;
+  const nQRO=state.questions.filter(x=>x.type==="QRO").length;
+  return `${total} exercices · ${nQCM} QCM · ${nQRO} QRO`;
+}
+
+/** =========================
+ *  4) RENDU
+ *  ========================= */
+function render(){
+  document.getElementById("meta").textContent = metaText();
+
+  const app=document.getElementById("app");
+  app.innerHTML="";
+
+  state.questions.forEach((q, idx) => {
+    const exoNum = idx+1;
+
+    const card=document.createElement("section");
+    card.className="card";
+    card.dataset.qid=q.id;
+
+    // Header
+    const modeLabel = q.type==="QCM"
+      ? (q.mode==="single" ? "QCM · 1 réponse" : "QCM · multi réponses")
+      : "QRO";
+    const icon = q.icon || (q.type==="QCM" ? "🧩" : "✍️");
+
+    card.innerHTML = `
+      <div class="topline">
+        <h3 class="title">${escapeHtml(icon)} Exercice ${exoNum}</h3>
+        <span class="pill">${modeLabel}</span>
+      </div>
+      <div class="prompt">${escapeHtml(q.prompt)}</div>
+    `;
+
+    // Body
+    if(q.type==="QCM"){
+      const list=document.createElement("div");
+      list.className="choices";
+
+      const groupName = `grp_${q.id}`;
+      q.choices.forEach((c, cidx) => {
+        const letter = String.fromCharCode(65 + cidx);
+        const inputId = `${q.id}_${cidx}`;
+
+        const row=document.createElement("label");
+        row.className="choice";
+
+        const input=document.createElement("input");
+        input.type = (q.mode==="single") ? "radio" : "checkbox";
+        input.name = groupName;
+        input.id = inputId;
+        input.dataset.correct = String(!!c.correct);
+
+        const span=document.createElement("span");
+        span.innerHTML = `<b>${letter}.</b> ${escapeHtml(c.text)}`;
+
+        row.appendChild(input);
+        row.appendChild(span);
+        list.appendChild(row);
+      });
+
+      card.appendChild(list);
+
+      // Controls: submit per QCM
+      const controls=document.createElement("div");
+      controls.className="controls";
+
+      const btn=document.createElement("button");
+      btn.className="primary";
+      btn.textContent="Soumettre";
+      btn.addEventListener("click", () => submitOneQCM(q.id));
+
+      const btnReset=document.createElement("button");
+      btnReset.textContent="Réinitialiser";
+      btnReset.addEventListener("click", () => resetOne(q.id));
+
+      controls.appendChild(btn);
+      controls.appendChild(btnReset);
+      card.appendChild(controls);
+    }
+
+    if(q.type==="QRO"){
+      const ta=document.createElement("textarea");
+      ta.placeholder="Écris ta réponse ici…";
+      ta.id = `ta_${q.id}`;
+      card.appendChild(ta);
+
+      const controls=document.createElement("div");
+      controls.className="controls";
+
+      const btn=document.createElement("button");
+      btn.className="primary";
+      btn.textContent="Soumettre";
+      btn.addEventListener("click", () => submitOneQRO(q.id));
+
+      const btnReset=document.createElement("button");
+      btnReset.textContent="Réinitialiser";
+      btnReset.addEventListener("click", () => resetOne(q.id));
+
+      controls.appendChild(btn);
+      controls.appendChild(btnReset);
+      card.appendChild(controls);
+    }
+
+    // Feedback placeholder
+    const fb=document.createElement("div");
+    fb.className="feedback";
+    fb.style.display="none";
+    fb.id = `fb_${q.id}`;
+    card.appendChild(fb);
+
+    app.appendChild(card);
+  });
+}
+
+/** =========================
+ *  5) ACTIONS : QCM / QRO
+ *  ========================= */
+function submitOneQCM(qid){
+  const q = state.questions.find(x => x.id===qid);
+  if(!q) return;
+
+  const card = document.querySelector(`[data-qid="${qid}"]`);
+  const inputs = Array.from(card.querySelectorAll("input"));
+
+  // Gather chosen and correct
+  const chosen = inputs.map((el, idx)=>({idx, checked:el.checked}))
+                       .filter(x=>x.checked).map(x=>x.idx);
+  const correctIdx = inputs.map((el, idx)=>({idx, correct:el.dataset.correct==="true"}))
+                           .filter(x=>x.correct).map(x=>x.idx);
+
+  const ok = sameSet(chosen, correctIdx);
+
+  // Disable
+  inputs.forEach(el => el.disabled = true);
+  card.querySelectorAll("button").forEach(b => { if(b.textContent==="Soumettre") b.disabled = true; });
+
+  // Feedback
+  const fb = document.getElementById(`fb_${qid}`);
+  fb.style.display="block";
+  fb.classList.remove("ok","ko");
+  fb.classList.add(ok ? "ok" : "ko");
+
+  const correctLetters = correctIdx.map(i => String.fromCharCode(65+i)).join(", ") || "—";
+  fb.textContent =
+    (ok ? "✅ Bonne réponse." : "❌ Mauvaise réponse.") + "\n\n" +
+    `Bonne(s) réponse(s) : ${correctLetters}\n` +
+    (q.solutionText ? q.solutionText : "");
+}
+
+function submitOneQRO(qid){
+  const q = state.questions.find(x => x.id===qid);
+  if(!q) return;
+
+  const card = document.querySelector(`[data-qid="${qid}"]`);
+  const ta = card.querySelector("textarea");
+  const user = (ta.value || "").trim();
+
+  ta.disabled = true;
+  card.querySelectorAll("button").forEach(b => { if(b.textContent==="Soumettre") b.disabled = true; });
+
+  const fb = document.getElementById(`fb_${qid}`);
+  fb.style.display="block";
+  fb.classList.remove("ok","ko");
+
+  fb.textContent =
+    "✅ Réponse enregistrée.\n\n" +
+    `Ta réponse : ${user ? user : "(vide)"}\n\n` +
+    `Réponse proposée : ${q.modelAnswer ? q.modelAnswer : "—"}`;
+}
+
+function resetOne(qid){
+  const card = document.querySelector(`[data-qid="${qid}"]`);
+  if(!card) return;
+
+  // reset inputs/textarea
+  card.querySelectorAll("input").forEach(el => { el.checked=false; el.disabled=false; });
+  card.querySelectorAll("textarea").forEach(el => { el.value=""; el.disabled=false; });
+
+  // reset feedback
+  const fb = document.getElementById(`fb_${qid}`);
+  if(fb){
+    fb.style.display="none";
+    fb.textContent="";
+    fb.classList.remove("ok","ko");
+  }
+
+  // re-enable submit button
+  card.querySelectorAll("button").forEach(b => b.disabled=false);
+}
+
+/** =========================
+ *  6) GLOBAL BUTTON
+ *  ========================= */
+document.getElementById("btnNew").addEventListener("click", () => buildAttempt());
+
+/** =========================
+ *  7) INIT (randomize on load)
+ *  ========================= */
+buildAttempt();
+</script>
+</body>
+</html>
